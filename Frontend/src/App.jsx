@@ -11,6 +11,7 @@ import MainLayout from "./components/layout/mainLayout";
 import Home from "./pages/public/homePage";
 import Login from "./pages/public/loginPage";
 import Register from "./pages/public/registerPage";
+import ExplorePage from "./pages/public/explorePage";
 import AreaSearchPage from "./pages/public/areaSearchPage";
 import ServiceProviders from "./pages/public/serviceProvidersPage";
 import ForgotPassword from "./pages/public/forgetPassword";
@@ -32,6 +33,7 @@ import ManageCategories from "./pages/admin/managerCategories";
 
 import ScrollToTop from "./hooks/scrollToTopHook";
 import { Toaster, toast } from "react-hot-toast";
+
 
 function App() {
   const dispatch = useDispatch();
@@ -115,6 +117,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/explore" element={<ExplorePage />} />
           <Route path="/search" element={<AreaSearchPage />} />
           <Route path="/providers" element={<ServiceProviders />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />

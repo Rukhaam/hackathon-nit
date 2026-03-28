@@ -7,10 +7,10 @@ import {
   clearProviderMessages,
 } from "../../redux/slices/providerSlice";
 import { useToast } from "../../hooks/toastHook";
-import { ShieldCheck, ToggleRight, MapPin, IndianRupee } from "lucide-react";
+import { ShieldCheck, ToggleRight, MapPin, IndianRupee, Sparkles } from "lucide-react";
 import AsyncSelect from "react-select/async";
+import { aiService } from "../../api/aiApi"; 
 
-// Global timeout for debouncing
 let searchTimeout;
 
 export default function EditProfile() {
@@ -29,6 +29,7 @@ export default function EditProfile() {
   });
 
   const [selectedLocation, setSelectedLocation] = useState(null);
+  const [generating, setGenerating] = useState(false);
 
   useEffect(() => {
     dispatch(fetchProviderData());
@@ -56,6 +57,31 @@ export default function EditProfile() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // 🌟 CLEANED: Using the separated API service
+  const handleMagicWrite = async () => {
+    if (!formData.categoryId) {
+      showError("Please select a Primary Service Category first.");
+      return;
+    }
+
+    const selectedCategory = categories.find(c => String(c.id) === String(formData.categoryId));
+    
+    setGenerating(true);
+    try {
+      const data = await aiService.generateBio(
+        selectedCategory?.name || "Professional", 
+        "several"
+      );
+      
+      setFormData({ ...formData, bio: data.bio }); 
+      showSuccess("Magic Bio generated successfully! ✨");
+    } catch (error) {
+      console.error(error);
+      showError("AI is resting right now. Please try again later.");
+    }
+    setGenerating(false);
+  };
+
   const loadLocationOptions = (inputValue) => {
     return new Promise((resolve) => {
       if (!inputValue || inputValue.trim().length < 3) {
@@ -67,7 +93,6 @@ export default function EditProfile() {
 
       searchTimeout = setTimeout(async () => {
         try {
-          // 🌟 FIX: Use import.meta.env for Vite
           const GEOAPIFY_API_KEY = import.meta.env.VITE_GEOAPIFY_API_KEY;
 
           const response = await fetch(
@@ -258,6 +283,7 @@ export default function EditProfile() {
               Customers will use this exact location to find you.
             </p>
           </div>
+          
           <div>
             <label className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-2">
               <IndianRupee size={16} className="text-gray-400" />
@@ -281,25 +307,41 @@ export default function EditProfile() {
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">
-              About You (Public Bio)
-            </label>
+            <div className="flex justify-between items-center mb-2">
+              <label className="block text-sm font-bold text-gray-700">
+                About You (Public Bio)
+              </label>
+              <button 
+                type="button" 
+                onClick={handleMagicWrite}
+                disabled={generating || isLoading}
+                className="text-xs font-bold text-purple-600 bg-purple-50 px-3 py-1.5 rounded-full flex items-center gap-1.5 hover:bg-purple-100 transition-colors disabled:opacity-50"
+              >
+                <Sparkles size={14} className={generating ? "animate-pulse" : ""} /> 
+                {generating ? "Writing..." : "Magic Write"}
+              </button>
+            </div>
+            
             <textarea
               name="bio"
               value={formData.bio}
               onChange={handleChange}
-              disabled={isLoading}
+              disabled={isLoading || generating}
               rows="5"
               required
               placeholder="Tell customers about your experience..."
-              className="w-full px-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none resize-none bg-gray-50 focus:bg-white transition-all disabled:opacity-60 text-sm leading-relaxed"
+              className={`w-full px-4 py-3.5 border rounded-xl focus:ring-2 outline-none resize-none transition-all disabled:opacity-60 text-sm leading-relaxed ${
+                generating 
+                  ? "border-purple-300 bg-purple-50/30 ring-2 ring-purple-100 animate-pulse text-purple-800" 
+                  : "border-gray-300 bg-gray-50 focus:bg-white focus:ring-blue-500 text-gray-900"
+              }`}
             ></textarea>
           </div>
 
           <div className="flex justify-end pt-4">
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || generating}
               className="w-full md:w-auto bg-gray-900 text-white font-bold px-10 py-3.5 rounded-xl hover:bg-gray-800 transition-all disabled:opacity-50 shadow-md hover:shadow-lg"
             >
               {isLoading ? "Saving Profile..." : "Save Changes"}

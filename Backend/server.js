@@ -11,6 +11,7 @@ import providerRoutes from "./routes/providerRoutes.js";
 import bookingRoutes from "./routes/bookingRoutes.js";
 import reviewRoutes from "./routes/reviewRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
+import apiRoutes from './routes/aiRoutes.js'
 
 import { errorMiddleware } from "./middlewares/errorMiddleware.js";
 import { startCronJobs } from "./utils/deleteUnverifiedUsers.js";
@@ -55,6 +56,7 @@ app.use(cookieParser());
 // ROUTES
 app.use("/api/admin", adminRoutes);
 app.use("/api/providers", providerRoutes);
+app.use("/api/ai",apiRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/bookings", bookingRoutes);

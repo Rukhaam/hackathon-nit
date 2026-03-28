@@ -12,7 +12,6 @@ export const approveProviderAPI = async (profileId, isApproved) => {
   return response.data;
 };
 
-// Create a new category
 export const createCategoryAPI = async (categoryData) => {
   const response = await api.post("/categories", categoryData);
   return response.data;

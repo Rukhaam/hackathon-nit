@@ -11,7 +11,10 @@ import {
   clearReviewMessages,
 } from "../../redux/slices/reviewSlice";
 import { useToast } from "../../hooks/toastHook";
-import { ShieldCheck, Star } from "lucide-react";
+// 🌟 Added new icons for the AI features
+import { ShieldCheck, Star, TrendingUp, Sparkles, Globe } from "lucide-react";
+// 🌟 Import your AI service
+import { aiService } from "../../api/aiApi";
 
 export default function ProviderProfile() {
   const { id } = useParams();
@@ -19,7 +22,7 @@ export default function ProviderProfile() {
   const dispatch = useDispatch();
   const { showSuccess, showError, showLoading, dismissToast } = useToast();
   
-  // 🌟 Ref to smoothly scroll mobile users to the form
+  // Ref to smoothly scroll mobile users to the form
   const bookingFormRef = useRef(null);
 
   const { user } = useSelector((state) => state.auth);
@@ -40,6 +43,10 @@ export default function ProviderProfile() {
     scheduledDate: "",
     notes: "",
   });
+
+  // 🌟 NEW: State for Fair Price Estimator
+  const [fairPriceData, setFairPriceData] = useState(null);
+  const [isCheckingPrice, setIsCheckingPrice] = useState(false);
 
   const provider = providers.find((p) => p?.profile_id === Number(id));
 
@@ -64,6 +71,22 @@ export default function ProviderProfile() {
   };
 
   const BASE_PRICE = provider?.base_price ? Number(provider.base_price) : 0;
+
+  // 🌟 NEW: Handler to check fair price using AI Service
+  const handleCheckFairPrice = async () => {
+    // Use their typed address, or fallback to the provider's general area
+    const city = formData.address || provider.service_area || "your area"; 
+    
+    setIsCheckingPrice(true);
+    try {
+      const data = await aiService.getFairPrice(provider.category_name, city);
+      setFairPriceData(data);
+    } catch (error) {
+      console.error(error);
+      showError("Could not fetch live market rates right now.");
+    }
+    setIsCheckingPrice(false);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -136,7 +159,6 @@ export default function ProviderProfile() {
   }
 
   return (
-    // 🌟 Added relative and pb-32 to accommodate the sticky bottom bar on mobile
     <div className="relative max-w-4xl mx-auto space-y-8 mt-4 pb-32 md:pb-12">
       
       {/* PROVIDER DETAILS CARD */}
@@ -233,7 +255,6 @@ export default function ProviderProfile() {
         </div>
 
         {/* BOOKING FORM CARD */}
-        {/* 🌟 Attached the ref here for smooth scrolling from the mobile bottom bar */}
         <div ref={bookingFormRef} className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 h-fit scroll-mt-24">
           <h2 className="text-2xl font-bold text-gray-800 mb-6">
             Request Service
@@ -327,11 +348,28 @@ export default function ProviderProfile() {
                 ></textarea>
               </div>
 
-              {/* Pricing Summary Box */}
+              {/* 🌟 UPGRADED: Pricing Summary Box with Fair Price Check */}
               <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-5 mb-6 mt-4">
-                <h4 className="text-sm font-bold text-gray-900 mb-3">
-                  Booking Summary
-                </h4>
+                
+                <div className="flex justify-between items-center mb-4">
+                  <h4 className="text-sm font-bold text-gray-900">
+                    Booking Summary
+                  </h4>
+                  
+                  {/* FAIR PRICE BUTTON */}
+                  {!fairPriceData && (
+                    <button 
+                      type="button"
+                      onClick={handleCheckFairPrice}
+                      disabled={isCheckingPrice}
+                      className="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-full flex items-center gap-1.5 hover:bg-emerald-100 transition-colors disabled:opacity-50"
+                    >
+                      <TrendingUp size={14} className={isCheckingPrice ? "animate-bounce" : ""} />
+                      {isCheckingPrice ? "Analyzing Market..." : "Check Fair Price"}
+                    </button>
+                  )}
+                </div>
+
                 <div className="flex justify-between items-center text-sm text-gray-600 mb-2">
                   <span>Base Visiting Fee</span>
                   <span className="font-semibold">₹{BASE_PRICE}</span>
@@ -348,7 +386,35 @@ export default function ProviderProfile() {
                     ₹{BASE_PRICE}
                   </span>
                 </div>
-                <p className="text-xs text-gray-500 mt-3 flex items-start gap-1.5">
+
+                {/* 🌟 FAIR PRICE AI RESULT UI */}
+                {fairPriceData && (
+                  <div className="mt-4 p-4 bg-white rounded-lg border border-emerald-100 shadow-sm animate-fade-in-up">
+                    <p className="text-sm text-gray-700 font-medium leading-relaxed mb-3">
+                      <Sparkles className="inline-block text-emerald-500 mb-1 mr-1" size={16} />
+                      {fairPriceData.estimate}
+                    </p>
+                    
+                    {fairPriceData.sources && fairPriceData.sources.length > 0 && (
+                      <div className="pt-3 border-t border-gray-50">
+                        <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-2 flex items-center gap-1">
+                          <Globe size={12} /> Sources Verified by AI
+                        </p>
+                        <ul className="space-y-1">
+                          {fairPriceData.sources.slice(0, 2).map((source, i) => (
+                            <li key={i} className="text-xs text-blue-500 hover:underline truncate">
+                              <a href={source.url} target="_blank" rel="noreferrer">
+                                {source.title || new URL(source.url).hostname}
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <p className="text-xs text-gray-500 mt-4 flex items-start gap-1.5">
                   <ShieldCheck
                     size={14}
                     className="shrink-0 text-blue-500 mt-0.5"
@@ -369,7 +435,7 @@ export default function ProviderProfile() {
         </div>
       </div>
 
-      {/* 🌟 MOBBIN-STYLE STICKY MOBILE CTA */}
+      {/* MOBBIN-STYLE STICKY MOBILE CTA */}
       {(!user || user.id !== provider.user_id) && (
         <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/90 backdrop-blur-md border-t border-gray-200 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] z-50 md:hidden pb-safe animate-fade-in-up">
           <div className="flex items-center justify-between max-w-7xl mx-auto">

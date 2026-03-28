@@ -13,6 +13,7 @@
     "@reduxjs/toolkit": "^2.11.2",
     "@tailwindcss/vite": "^4.2.1",
     "axios": "^1.13.6",
+    "exa-js": "^2.10.2",
     "framer-motion": "^12.35.1",
     "lucide-react": "^0.577.0",
     "mobbin": "^0.1.1",

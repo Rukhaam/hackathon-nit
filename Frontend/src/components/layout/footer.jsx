@@ -1,47 +1,54 @@
 import { Link } from "react-router-dom";
-import { useSelector } from "react-redux"; // 🌟 Import Redux
+import { useSelector } from "react-redux";
 import { Github, Twitter, Linkedin, Instagram, ArrowRight } from "lucide-react";
 import { footerContent } from "../../utils/footerData";
+
 export default function Footer() {
   const currentYear = new Date().getFullYear();
-
   const { user, isAuthenticated } = useSelector((state) => state.auth);
 
   const role = isAuthenticated && user ? user.role.toLowerCase() : "guest";
-
   const content = footerContent[role] || footerContent.guest;
 
   return (
-    <footer className="relative bg-[#0a0a0a] text-white pt-24 pb-8 border-t border-gray-800/60 overflow-hidden mt-auto shrink-0 font-sans">
-      {/* The "Slick" Glowing Background Effect */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_120%,rgba(37,99,235,0.15),rgba(255,255,255,0))] pointer-events-none"></div>
+
+    <footer className="relative mt-auto shrink-0 font-sans overflow-hidden border-t border-black/5 bg-white/70 backdrop-blur-2xl pt-24 pb-8 z-10 text-slate-950 selection:bg-black selection:text-white">
+      
+      {/* 🌟 SUBTLE AMBIENT ACCENTS (To give the blur depth) */}
+      <div className="absolute top-[-30%] left-[20%] w-[600px] h-[300px] rounded-full bg-slate-100/50 blur-[100px] pointer-events-none -z-10"></div>
+      <div className="absolute bottom-[-10%] right-[30%] w-[400px] h-[200px] rounded-full bg-slate-100 blur-[80px] pointer-events-none -z-10"></div>
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-8 mb-16">
-          {/* Brand Column (Stays the same for everyone) */}
+          
+          {/* Brand Column */}
           <div className="md:col-span-4 lg:col-span-5">
             <Link to="/" className="flex items-center gap-3 group mb-6 w-max">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/40 group-hover:scale-105 transition-all duration-300">
+              {/* Logo block is now solid black to contrast with light background */}
+              <div className="w-10 h-10 bg-slate-950 rounded-xl flex items-center justify-center shadow-md group-hover:scale-105 transition-all duration-300">
                 <span className="text-white font-extrabold text-xl leading-none">
                   L
                 </span>
               </div>
-              <span className="font-extrabold text-2xl tracking-tight text-white">
+              {/* Global Text Black */}
+              <span className="font-extrabold text-2xl tracking-tight text-slate-950">
                 LocalHub
               </span>
             </Link>
-            <p className="text-gray-400 leading-relaxed text-sm max-w-sm mb-8">
+            {/* Softened Black for paragraph text */}
+            <p className="text-slate-700 leading-relaxed text-sm max-w-sm mb-8 font-medium">
               The most elegant way to find, book, and manage premium local
               services. We bring verified professionals directly to your door.
             </p>
 
-            {/* Social Icons */}
+            {/* Darkened Glassy Social Icons */}
             <div className="flex items-center gap-3">
               {[Twitter, Github, Linkedin, Instagram].map((Icon, i) => (
                 <a
                   key={i}
                   href="#"
-                  className="w-10 h-10 rounded-full bg-gray-900 border border-gray-800 flex items-center justify-center text-gray-400 hover:bg-gray-800 hover:text-white hover:border-gray-600 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-gray-900"
+                  // bg and border are now subtle dark translucent tints
+                  className="w-10 h-10 rounded-full bg-black/[0.03] border border-black/5 flex items-center justify-center text-slate-600 hover:text-black hover:bg-black/[0.07] hover:border-black/10 transition-all duration-300 hover:-translate-y-1 hover:shadow-sm"
                 >
                   <Icon size={18} />
                 </a>
@@ -49,19 +56,20 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* 🌟 DYNAMIC LINKS COLUMNS */}
+          {/* DYNAMIC LINKS COLUMNS (Global Text Black) */}
           <div className="md:col-span-8 lg:col-span-7 grid grid-cols-2 sm:grid-cols-3 gap-8">
+            
             {/* Column 1 */}
             <div>
-              <h4 className="font-bold text-gray-100 tracking-wider mb-6 text-sm uppercase">
+              <h4 className="font-bold text-slate-950 tracking-wider mb-6 text-sm uppercase">
                 {content.col1.title}
               </h4>
-              <ul className="space-y-4 text-sm text-gray-400">
+              <ul className="space-y-4 text-sm text-slate-700 font-medium">
                 {content.col1.links.map((link, i) => (
                   <li key={i}>
                     <Link
                       to={link.path}
-                      className="group flex items-center hover:text-white transition-colors duration-300 w-fit"
+                      className="group flex items-center hover:text-black transition-colors duration-300 w-fit"
                     >
                       <span className="group-hover:translate-x-1.5 transition-transform duration-300 ease-out">
                         {link.name}
@@ -74,15 +82,15 @@ export default function Footer() {
 
             {/* Column 2 */}
             <div>
-              <h4 className="font-bold text-gray-100 tracking-wider mb-6 text-sm uppercase">
+              <h4 className="font-bold text-slate-950 tracking-wider mb-6 text-sm uppercase">
                 {content.col2.title}
               </h4>
-              <ul className="space-y-4 text-sm text-gray-400">
+              <ul className="space-y-4 text-sm text-slate-700 font-medium">
                 {content.col2.links.map((link, i) => (
                   <li key={i}>
                     <Link
                       to={link.path}
-                      className="group flex items-center hover:text-white transition-colors duration-300 w-fit"
+                      className="group flex items-center hover:text-black transition-colors duration-300 w-fit"
                     >
                       <span className="group-hover:translate-x-1.5 transition-transform duration-300 ease-out">
                         {link.name}
@@ -93,19 +101,19 @@ export default function Footer() {
               </ul>
             </div>
 
-            {/* 🌟 DYNAMIC CTA COLUMN */}
+            {/* DARK CTA COLUMN (Strong contrast against light glass) */}
             <div className="col-span-2 sm:col-span-1 mt-4 sm:mt-0">
-              <h4 className="font-bold text-gray-100 tracking-wider mb-6 text-sm uppercase">
+              <h4 className="font-bold text-slate-950 tracking-wider mb-6 text-sm uppercase">
                 {content.cta.title}
               </h4>
               <Link
                 to={content.cta.path}
-                className="group inline-flex items-center gap-2 bg-white text-gray-900 px-5 py-3 rounded-xl text-sm font-bold hover:bg-gray-100 transition-all shadow-[0_0_20px_rgba(255,255,255,0.05)] hover:shadow-[0_0_25px_rgba(255,255,255,0.15)]"
+                className="group inline-flex items-center gap-2 bg-slate-950 text-white px-5 py-3 rounded-xl text-sm font-bold hover:bg-slate-800 transition-all duration-300 shadow-md hover:shadow-lg"
               >
                 {content.cta.btnText}{" "}
                 <ArrowRight
                   size={16}
-                  className="text-gray-900 group-hover:translate-x-1 transition-transform"
+                  className="text-white/80 group-hover:translate-x-1 group-hover:text-white transition-all"
                 />
               </Link>
             </div>
@@ -113,18 +121,18 @@ export default function Footer() {
         </div>
 
         {/* Bottom Copyright Bar */}
-        <div className="border-t border-gray-800/60 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-gray-500 text-sm font-medium">
+        <div className="border-t border-black/5 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-slate-500 text-sm font-medium">
             &copy; {currentYear} LocalHub Inc. All rights reserved.
           </p>
-          <div className="flex items-center space-x-6 text-sm font-medium text-gray-500">
-            <Link to="/" className="hover:text-gray-300 transition-colors">
+          <div className="flex items-center space-x-6 text-sm font-medium text-slate-500">
+            <Link to="/" className="hover:text-black transition-colors">
               Privacy Policy
             </Link>
-            <Link to="/" className="hover:text-gray-300 transition-colors">
+            <Link to="/" className="hover:text-black transition-colors">
               Terms of Service
             </Link>
-            <Link to="/" className="hover:text-gray-300 transition-colors">
+            <Link to="/" className="hover:text-black transition-colors">
               Cookie Settings
             </Link>
           </div>

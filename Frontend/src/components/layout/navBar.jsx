@@ -23,15 +23,15 @@ export default function Navbar() {
     }
   };
 
-// 🌟 FIX: Target the specific main container that actually handles the scrolling
-const scrollToTop = () => {
-  const scrollContainer = document.getElementById("main-scroll-container");
-  if (scrollContainer) {
-    scrollContainer.scrollTo({ top: 0, behavior: "smooth" });
-  } else {
-    window.scrollTo({ top: 0, behavior: "smooth" }); // Fallback
-  }
-};
+  // 🌟 FIX: Target the specific main container that actually handles the scrolling
+  const scrollToTop = () => {
+    const scrollContainer = document.getElementById("main-scroll-container");
+    if (scrollContainer) {
+      scrollContainer.scrollTo({ top: 0, behavior: "smooth" });
+    } else {
+      window.scrollTo({ top: 0, behavior: "smooth" }); // Fallback
+    }
+  };
 
   const getDashboardLink = () => {
     if (!user) return "/login";
@@ -67,7 +67,7 @@ const scrollToTop = () => {
 
   return (
     <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-gray-200/60 transition-all"  >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16 md:h-20">
           <Link to="/" className="flex items-center gap-2.5 group" onClick={scrollToTop}>
             <div className="w-9 h-9 bg-gradient-to-br from-gray-900 to-gray-700 rounded-xl flex items-center justify-center shadow-md group-hover:shadow-lg group-hover:scale-105 transition-all">
@@ -92,16 +92,9 @@ const scrollToTop = () => {
               </Link>
             </li>
             <li>
-              <button
-                onClick={() =>
-                  document
-                    .getElementById("providers-section")
-                    ?.scrollIntoView({ behavior: "smooth" })
-                }
-                className="px-4 py-2 text-gray-600 hover:text-gray-900 font-semibold rounded-lg hover:bg-gray-100/50 transition-all"
-              >
+              <Link to="/explore" onClick={scrollToTop} className="text-gray-600 hover:text-blue-600 font-bold">
                 Explore
-              </button>
+              </Link>
             </li>
           </ul>
 
@@ -177,17 +170,16 @@ const scrollToTop = () => {
                 </Link>
               </li>
               <li>
-                <button
+              <Link
+                  to="/explore"
                   onClick={() => {
-                    document
-                      .getElementById("providers-section")
-                      ?.scrollIntoView({ behavior: "smooth" });
+                    scrollToTop();
                     setIsOpen(false);
                   }}
-                  className="w-full text-left px-4 py-3 text-base font-bold text-gray-800 hover:bg-gray-100 rounded-xl"
+                  className="block px-4 py-3 text-base font-bold text-gray-800 hover:bg-gray-100 rounded-xl"
                 >
-                  Explore Services
-                </button>
+                  explore
+                </Link>
               </li>
 
               <li className="border-t border-gray-100 mt-4 pt-4">
@@ -205,10 +197,9 @@ const scrollToTop = () => {
                                 to={link.path}
                                 onClick={() => setIsOpen(false)}
                                 className={({ isActive }) =>
-                                  `block px-4 py-3 text-sm font-bold rounded-xl ${
-                                    isActive
-                                      ? "bg-gray-900 text-white shadow-md"
-                                      : "text-gray-600 hover:bg-gray-100"
+                                  `block px-4 py-3 text-sm font-bold rounded-xl ${isActive
+                                    ? "bg-gray-900 text-white shadow-md"
+                                    : "text-gray-600 hover:bg-gray-100"
                                   }`
                                 }
                               >
