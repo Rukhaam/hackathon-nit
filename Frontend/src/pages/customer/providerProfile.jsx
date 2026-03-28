@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchActiveProviders } from "../../redux/slices/exploreSlice";
@@ -11,16 +11,18 @@ import {
   clearReviewMessages,
 } from "../../redux/slices/reviewSlice";
 import { useToast } from "../../hooks/toastHook";
-import { ShieldCheck } from "lucide-react";
+import { ShieldCheck, Star } from "lucide-react";
 
 export default function ProviderProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { showSuccess, showError, showLoading, dismissToast } = useToast();
+  
+  // 🌟 Ref to smoothly scroll mobile users to the form
+  const bookingFormRef = useRef(null);
 
   const { user } = useSelector((state) => state.auth);
-  
 
   const { providers, isLoading: exploring } = useSelector(
     (state) => state.explore
@@ -66,7 +68,7 @@ export default function ProviderProfile() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const bookingPayload = {
-      _providerId: provider.user_id,
+      providerId: provider.user_id,
       categoryId: provider.category_id,
       phoneNumber: formData.phoneNumber,
       address: formData.address,
@@ -107,6 +109,10 @@ export default function ProviderProfile() {
     return `${year}-${month}-${day}`;
   };
 
+  const scrollToForm = () => {
+    bookingFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   if (exploring) {
     return (
       <div className="p-12 text-center text-gray-500 animate-pulse">
@@ -130,7 +136,9 @@ export default function ProviderProfile() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 mt-4 pb-12">
+    // 🌟 Added relative and pb-32 to accommodate the sticky bottom bar on mobile
+    <div className="relative max-w-4xl mx-auto space-y-8 mt-4 pb-32 md:pb-12">
+      
       {/* PROVIDER DETAILS CARD */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
         <div className="flex flex-col md:flex-row justify-between items-start gap-4">
@@ -225,7 +233,8 @@ export default function ProviderProfile() {
         </div>
 
         {/* BOOKING FORM CARD */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 h-fit">
+        {/* 🌟 Attached the ref here for smooth scrolling from the mobile bottom bar */}
+        <div ref={bookingFormRef} className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 h-fit scroll-mt-24">
           <h2 className="text-2xl font-bold text-gray-800 mb-6">
             Request Service
           </h2>
@@ -318,7 +327,7 @@ export default function ProviderProfile() {
                 ></textarea>
               </div>
 
-              {/* 🌟 NEW: Pricing Summary Box */}
+              {/* Pricing Summary Box */}
               <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-5 mb-6 mt-4">
                 <h4 className="text-sm font-bold text-gray-900 mb-3">
                   Booking Summary
@@ -359,6 +368,26 @@ export default function ProviderProfile() {
           )}
         </div>
       </div>
+
+      {/* 🌟 MOBBIN-STYLE STICKY MOBILE CTA */}
+      {(!user || user.id !== provider.user_id) && (
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/90 backdrop-blur-md border-t border-gray-200 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] z-50 md:hidden pb-safe animate-fade-in-up">
+          <div className="flex items-center justify-between max-w-7xl mx-auto">
+            <div>
+              <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Base Fee</p>
+              <p className="text-2xl font-extrabold text-gray-900">
+                ₹{BASE_PRICE}
+              </p>
+            </div>
+            <button 
+              onClick={scrollToForm}
+              className="bg-blue-600 text-white px-8 py-3.5 rounded-full font-bold shadow-lg hover:bg-blue-700 active:scale-95 transition-all flex items-center gap-2"
+            >
+              Book Now
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
