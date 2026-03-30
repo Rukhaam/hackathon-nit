@@ -2,7 +2,7 @@
 
 LocalHub is a next-generation platform connecting customers with trusted, verified local professionals (plumbers, electricians, tutors, etc.). Moving beyond traditional directories, LocalHub leverages advanced AI to provide natural language searching, automated profile generation, and live web-scraped market price estimations.
 PROJECT LINK :
-https://hackathon-nit.vercel.app
+https://localhubservice.vercel.app/
 
 ## ✨ Key Features
 
