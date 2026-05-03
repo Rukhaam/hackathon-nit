@@ -48,7 +48,7 @@ export const Particles = ({
   ease = 50,
   size = 4.4,
   refresh = false,
-  color = "#ffffff",
+  color = "#000000",
   vx = 0,
   vy = 0,
   ...props

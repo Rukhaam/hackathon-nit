@@ -464,7 +464,7 @@ export default function Home() {
           className="absolute inset-0 z-0 w-full h-full opacity-60"
           quantity={250} 
           ease={80}
-          color="#3b82f6" 
+          color="#000000" 
           refresh
         />
 
