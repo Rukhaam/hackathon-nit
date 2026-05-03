@@ -1,16 +1,49 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate, NavLink } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, LogOut, LayoutDashboard } from "lucide-react";
+import { 
+  LogOut, 
+  LayoutDashboard, 
+  Home as HomeIcon, 
+  Compass, 
+  User, 
+  UserPlus, 
+  Calendar, 
+  Briefcase, 
+  ShieldCheck, 
+  Tags 
+} from "lucide-react";
 import { logout } from "../../redux/slices/authSlice";
 import { logoutUserAPI } from "../../api/authApi";
 
 export default function Navbar() {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  // Track scrolling to trigger the dynamic frosted glass effect on the top navbar
+  useEffect(() => {
+    const handleScroll = (e) => {
+      const scrollTop = e.target.scrollTop || window.scrollY;
+      setIsScrolled(scrollTop > 20);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    
+    const scrollContainer = document.getElementById("main-scroll-container");
+    if (scrollContainer) {
+      scrollContainer.addEventListener("scroll", handleScroll);
+    }
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      if (scrollContainer) {
+        scrollContainer.removeEventListener("scroll", handleScroll);
+      }
+    };
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -23,13 +56,12 @@ export default function Navbar() {
     }
   };
 
-  // 🌟 FIX: Target the specific main container that actually handles the scrolling
   const scrollToTop = () => {
     const scrollContainer = document.getElementById("main-scroll-container");
     if (scrollContainer) {
       scrollContainer.scrollTo({ top: 0, behavior: "smooth" });
     } else {
-      window.scrollTo({ top: 0, behavior: "smooth" }); // Fallback
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
@@ -40,212 +72,185 @@ export default function Navbar() {
     return "/customer/dashboard";
   };
 
-  const getSidebarLinks = () => {
+  // 🌟 NEW: Dynamic items specifically for the mobile bottom tab bar
+  const getMobileNavItems = () => {
     const role = user?.role?.toLowerCase().trim();
+
+    if (!isAuthenticated) {
+      return [
+        { name: "Home", path: "/", icon: HomeIcon },
+        { name: "Explore", path: "/explore", icon: Compass },
+        { name: "Log in", path: "/login", icon: User },
+        { name: "Sign up", path: "/register", icon: UserPlus },
+      ];
+    }
+
     if (role === "admin") {
       return [
-        { name: "Dashboard", path: "/admin/dashboard" },
-        { name: "Approve Providers", path: "/admin/approve-providers" },
-        { name: "Categories", path: "/admin/categories" },
+        { name: "Home", path: "/", icon: HomeIcon },
+        { name: "Dashboard", path: "/admin/dashboard", icon: LayoutDashboard },
+        { name: "Approvals", path: "/admin/approve-providers", icon: ShieldCheck },
+        { name: "Categories", path: "/admin/categories", icon: Tags },
+        { name: "Log out", action: handleLogout, icon: LogOut, isDanger: true },
       ];
     }
+
     if (role === "provider") {
       return [
-        { name: "Dashboard", path: "/provider/dashboard" },
-        { name: "Manage Jobs", path: "/provider/jobs" },
-        { name: "My Profile", path: "/provider/profile" },
+        { name: "Home", path: "/", icon: HomeIcon },
+        { name: "Dashboard", path: "/provider/dashboard", icon: LayoutDashboard },
+        { name: "Jobs", path: "/provider/jobs", icon: Briefcase },
+        { name: "Profile", path: "/provider/profile", icon: User },
+        { name: "Log out", action: handleLogout, icon: LogOut, isDanger: true },
       ];
     }
-    if (role === "customer") {
-      return [
-        { name: "Dashboard", path: "/customer/dashboard" },
-        { name: "My Bookings", path: "/customer/bookings" },
-      ];
-    }
-    return [];
+
+    // Default to Customer
+    return [
+      { name: "Home", path: "/", icon: HomeIcon },
+      { name: "Explore", path: "/explore", icon: Compass },
+      { name: "Dashboard", path: "/customer/dashboard", icon: LayoutDashboard },
+      { name: "Bookings", path: "/customer/bookings", icon: Calendar },
+      { name: "Log out", action: handleLogout, icon: LogOut, isDanger: true },
+    ];
   };
 
   return (
-    <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-gray-200/60 transition-all"  >
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16 md:h-20">
-          <Link to="/" className="flex items-center gap-2.5 group" onClick={scrollToTop}>
-            <div className="w-9 h-9 bg-gradient-to-br from-gray-900 to-gray-700 rounded-xl flex items-center justify-center shadow-md group-hover:shadow-lg group-hover:scale-105 transition-all">
-              <span className="text-white font-extrabold text-xl leading-none " >
-                L
-              </span>
-            </div>
-            <span className="font-extrabold text-2xl text-gray-900 tracking-tight">
-              LocalHub
-            </span>
-          </Link>
-
-          {/* Desktop Navigation Links */}
-          <ul className="hidden md:flex items-center space-x-1">
-            <li>
-              <Link
-                to="/"
-                onClick={scrollToTop}
-                className="px-4 py-2 text-gray-600 hover:text-gray-900 font-semibold rounded-lg hover:bg-gray-100/50 transition-all"
-              >
-                Home
+    <>
+      {/* 🌟 1. TOP NAVBAR (Floating Island) */}
+      <div className="fixed top-4 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none">
+        <nav 
+          className={`pointer-events-auto w-full max-w-5xl rounded-2xl transition-all duration-500 ease-out relative ${
+            isScrolled 
+              ? "bg-white/80 backdrop-blur-xl border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.08)] py-1" 
+              : "bg-white/40 backdrop-blur-md border border-white/30 shadow-sm py-2"
+          }`}
+        >
+          <div className="px-4 sm:px-6">
+            {/* Height is slightly smaller on mobile to save screen real estate */}
+            <div className="flex justify-between items-center h-12 md:h-16">
+              
+              {/* Logo (Visible on both Mobile and Desktop) */}
+              <Link to="/" className="flex items-center gap-2.5 group" onClick={scrollToTop}>
+                <div className="w-8 h-8 md:w-9 md:h-9 bg-gradient-to-br from-gray-900 to-gray-700 rounded-xl flex items-center justify-center shadow-md group-hover:shadow-lg group-hover:-translate-y-0.5 transition-all duration-300">
+                  <span className="text-white font-extrabold text-lg md:text-xl leading-none">L</span>
+                </div>
+                <span className="font-extrabold text-xl md:text-2xl text-gray-900 tracking-tight">
+                  LocalHub
+                </span>
               </Link>
-            </li>
-            <li>
-              <Link to="/explore" onClick={scrollToTop} className="text-gray-600 hover:text-blue-600 font-bold">
-                Explore
-              </Link>
-            </li>
-          </ul>
 
-          {/* Desktop Auth Buttons */}
-          <div className="hidden md:flex items-center space-x-3">
-            {isAuthenticated ? (
-              <div className="flex items-center gap-3">
-                <Link
-                  to={getDashboardLink()}
-                  className="flex items-center gap-2 px-4 py-2.5 text-sm font-bold text-gray-700 hover:text-gray-900 bg-white border border-gray-200 hover:bg-gray-50 rounded-xl shadow-sm transition-all"
-                >
-                  <LayoutDashboard size={16} />
-                  Dashboard
-                </Link>
-                <button
-                  onClick={handleLogout}
-                  className="flex items-center justify-center p-2.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors"
-                  title="Log out"
-                >
-                  <LogOut size={18} />
-                </button>
+              {/* Desktop Navigation Links */}
+              <ul className="hidden md:flex items-center space-x-2">
+                <li>
+                  <Link
+                    to="/"
+                    onClick={scrollToTop}
+                    className="px-4 py-2 text-gray-600 hover:text-gray-900 font-semibold rounded-xl hover:bg-gray-100/80 transition-all duration-300"
+                  >
+                    Home
+                  </Link>
+                </li>
+                <li>
+                  <Link 
+                    to="/explore" 
+                    onClick={scrollToTop} 
+                    className="px-4 py-2 text-gray-600 hover:text-blue-600 font-semibold rounded-xl hover:bg-blue-50/80 transition-all duration-300"
+                  >
+                    Explore
+                  </Link>
+                </li>
+              </ul>
+
+              {/* Desktop Auth Buttons */}
+              <div className="hidden md:flex items-center space-x-3">
+                {isAuthenticated ? (
+                  <div className="flex items-center gap-2">
+                    <Link
+                      to={getDashboardLink()}
+                      className="flex items-center gap-2 px-4 py-2.5 text-sm font-bold text-gray-700 hover:text-blue-700 bg-white/60 hover:bg-white border border-gray-200/80 hover:border-blue-200 rounded-xl shadow-sm transition-all duration-300"
+                    >
+                      <LayoutDashboard size={16} />
+                      Dashboard
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center justify-center p-2.5 text-gray-500 hover:text-red-600 bg-white/60 hover:bg-red-50 border border-gray-200/80 hover:border-red-100 rounded-xl transition-all duration-300"
+                      title="Log out"
+                    >
+                      <LogOut size={18} />
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <Link
+                      to="/login"
+                      className="px-5 py-2.5 text-sm font-bold text-gray-700 hover:text-gray-900 hover:bg-gray-100/80 rounded-xl transition-all duration-300"
+                    >
+                      Log in
+                    </Link>
+                    <Link
+                      to="/register"
+                      className="bg-gray-900 text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-gray-800 hover:-translate-y-0.5 transition-all duration-300 shadow-md hover:shadow-lg"
+                    >
+                      Sign up
+                    </Link>
+                  </>
+                )}
               </div>
-            ) : (
-              <>
-                <Link
-                  to="/login"
-                  className="px-5 py-2.5 text-sm font-bold text-gray-600 hover:text-gray-900 transition-colors"
-                >
-                  Log in
-                </Link>
-                <Link
-                  to="/register"
-                  className="bg-gray-900 text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-gray-800 transition-all shadow-md hover:shadow-lg"
-                >
-                  Sign up
-                </Link>
-              </>
-            )}
-          </div>
 
-          {/* Mobile Menu Hamburger Button */}
-          <div className="flex items-center md:hidden">
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="text-gray-600 hover:text-gray-900 focus:outline-none p-2 bg-gray-100 rounded-lg"
-            >
-              {isOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
+            </div>
           </div>
-        </div>
+        </nav>
       </div>
 
-      {/* Animated Mobile Navigation Dropdown Menu */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="md:hidden bg-white/95 backdrop-blur-xl border-t border-gray-200/60 shadow-2xl absolute w-full left-0 overflow-hidden"
-          >
-            <ul className="px-4 pt-4 pb-6 space-y-2">
-              <li>
-                <Link
-                  to="/"
-                  onClick={() => {
-                    scrollToTop();
-                    setIsOpen(false);
-                  }}
-                  className="block px-4 py-3 text-base font-bold text-gray-800 hover:bg-gray-100 rounded-xl"
+      {/* 🌟 2. MOBILE BOTTOM TAB BAR (Appears only on mobile devices) */}
+      <div className="md:hidden fixed bottom-4 left-4 right-4 z-50 pointer-events-none">
+        <nav className="pointer-events-auto bg-white/90 backdrop-blur-xl border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-2xl px-2 py-1.5 flex justify-between items-center">
+          {getMobileNavItems().map((item, idx) => {
+            const Icon = item.icon;
+            
+            // Render a button if it's an action (like Logout)
+            if (item.action) {
+              return (
+                <button
+                  key={idx}
+                  onClick={item.action}
+                  className={`flex flex-col items-center justify-center flex-1 py-2 px-1 transition-colors ${
+                    item.isDanger ? "text-red-400 hover:text-red-600" : "text-gray-500 hover:text-gray-900"
+                  }`}
                 >
-                  Home
-                </Link>
-              </li>
-              <li>
-              <Link
-                  to="/explore"
-                  onClick={() => {
-                    scrollToTop();
-                    setIsOpen(false);
-                  }}
-                  className="block px-4 py-3 text-base font-bold text-gray-800 hover:bg-gray-100 rounded-xl"
-                >
-                  explore
-                </Link>
-              </li>
+                  <Icon size={22} className="mb-1" />
+                  <span className="text-[10px] font-extrabold tracking-wide">{item.name}</span>
+                </button>
+              );
+            }
 
-              <li className="border-t border-gray-100 mt-4 pt-4">
-                <ul className="space-y-2">
-                  {isAuthenticated ? (
-                    <>
-                      <li className="mb-2">
-                        <div className="px-4 text-xs uppercase text-blue-600 font-extrabold tracking-widest mb-3">
-                          {user?.role} Menu
-                        </div>
-                        <ul className="space-y-1">
-                          {getSidebarLinks().map((link) => (
-                            <li key={link.name}>
-                              <NavLink
-                                to={link.path}
-                                onClick={() => setIsOpen(false)}
-                                className={({ isActive }) =>
-                                  `block px-4 py-3 text-sm font-bold rounded-xl ${isActive
-                                    ? "bg-gray-900 text-white shadow-md"
-                                    : "text-gray-600 hover:bg-gray-100"
-                                  }`
-                                }
-                              >
-                                {link.name}
-                              </NavLink>
-                            </li>
-                          ))}
-                        </ul>
-                      </li>
-
-                      <li className="border-t border-gray-100 pt-3 mt-2">
-                        <button
-                          onClick={() => {
-                            handleLogout();
-                            setIsOpen(false);
-                          }}
-                          className="flex items-center gap-2 w-full text-left px-4 py-3 text-sm font-bold text-red-600 hover:bg-red-50 rounded-xl transition-colors"
-                        >
-                          <LogOut size={16} /> Log out
-                        </button>
-                      </li>
-                    </>
-                  ) : (
-                    <div className="grid grid-cols-2 gap-3 mt-4">
-                      <Link
-                        to="/login"
-                        onClick={() => setIsOpen(false)}
-                        className="block text-center px-4 py-3 text-sm font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl"
-                      >
-                        Log in
-                      </Link>
-                      <Link
-                        to="/register"
-                        onClick={() => setIsOpen(false)}
-                        className="block text-center px-4 py-3 text-sm font-bold text-white bg-gray-900 hover:bg-gray-800 rounded-xl"
-                      >
-                        Sign up
-                      </Link>
-                    </div>
-                  )}
-                </ul>
-              </li>
-            </ul>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </nav>
+            // Render NavLink for regular routing paths
+            return (
+              <NavLink
+                key={idx}
+                to={item.path}
+                onClick={scrollToTop}
+                className={({ isActive }) =>
+                  `flex flex-col items-center justify-center flex-1 py-2 px-1 transition-all duration-300 ${
+                    isActive
+                      ? "text-blue-600 scale-105"
+                      : "text-gray-400 hover:text-gray-900"
+                  }`
+                }
+              >
+                {({ isActive }) => (
+                  <>
+                    <Icon size={22} className={`mb-1 ${isActive ? "stroke-[2.5px]" : "stroke-2"}`} />
+                    <span className="text-[10px] font-extrabold tracking-wide">{item.name}</span>
+                  </>
+                )}
+              </NavLink>
+            );
+          })}
+        </nav>
+      </div>
+    </>
   );
 }

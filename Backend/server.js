@@ -61,7 +61,9 @@ app.use("/api/auth", authRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/reviews", reviewRoutes);
-
+app.get('/health',(req,res)=>{
+  res.send("OK");
+})
 app.get("/", (req, res) => {
   res.send("Local Services Booking API is running securely...");
 });

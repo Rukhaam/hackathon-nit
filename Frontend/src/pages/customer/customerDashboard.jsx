@@ -66,7 +66,7 @@ export default function CustomerDashboard() {
 
   return (
     // 🌟 Removed mt-20 to fix the massive layout shift!
-    <div className="max-w-6xl mx-auto space-y-8 mt-4 pb-12">
+    <div className="max-w-6xl mx-auto space-y-8 mt-35 pb-12">
       {/* ========================================== */}
       {/* HEADER                                     */}
       {/* ========================================== */}

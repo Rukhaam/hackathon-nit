@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Search, Star, ArrowRight, MapPin, Layers, ArrowLeft, ArrowUpDown } from "lucide-react";
-import { fetchActiveProviders } from "../../redux/slices/exploreSlice";
+import { fetchActiveProviders, setSelectedCategory } from "../../redux/slices/exploreSlice";
 
 export default function ServiceProviders() {
   const dispatch = useDispatch();
@@ -19,31 +19,40 @@ export default function ServiceProviders() {
 
   const [searchArea] = useState(location.state?.searchArea || "");
   const [currentPage, setCurrentPage] = useState(1);
-  
-  // 🌟 NEW: State to track the active sorting method
   const [sortOrder, setSortOrder] = useState(""); // "" | "low-high" | "high-low"
 
-  // Dynamically find the name of the category they clicked on the homepage
-  const activeCategory = categories.find((c) => c.id === selectedCategoryId);
+  // 🌟 FIX 1: Grab the category ID from the router navigation state first
+  const categoryIdFromNav = location.state?.categoryId;
+  const effectiveCategoryId = categoryIdFromNav || selectedCategoryId;
+
+  // Dynamically find the name of the category
+  const activeCategory = categories.find((c) => c.id === effectiveCategoryId);
+
+  // Sync the router state back to Redux so the rest of the app knows
+  useEffect(() => {
+    if (categoryIdFromNav && categoryIdFromNav !== selectedCategoryId) {
+      dispatch(setSelectedCategory(categoryIdFromNav));
+    }
+  }, [dispatch, categoryIdFromNav, selectedCategoryId]);
 
   useEffect(() => {
-    // Only fetch if a category is selected (they came from the homepage click)
-    if (selectedCategoryId) {
+    // 🌟 FIX 1: Use the effective ID so it never misses the fetch
+    if (effectiveCategoryId) {
       dispatch(
         fetchActiveProviders({
-          categoryId: selectedCategoryId,
+          categoryId: effectiveCategoryId,
           serviceArea: searchArea,
           page: 1,
         })
       );
     }
-  }, [dispatch, selectedCategoryId, searchArea]);
+  }, [dispatch, effectiveCategoryId, searchArea]);
 
   const handlePageChange = (newPage) => {
     setCurrentPage(newPage);
     dispatch(
       fetchActiveProviders({
-        categoryId: selectedCategoryId,
+        categoryId: effectiveCategoryId,
         serviceArea: searchArea,
         page: newPage,
       })
@@ -51,21 +60,19 @@ export default function ServiceProviders() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // 🌟 NEW: Sort the providers array before mapping over it
   const sortedProviders = [...providers].sort((a, b) => {
-    // Safely extract prices, defaulting to 0 if missing
     const priceA = Number(a.base_price || a.basePrice) || 0;
     const priceB = Number(b.base_price || b.basePrice) || 0;
 
     if (sortOrder === "low-high") return priceA - priceB;
     if (sortOrder === "high-low") return priceB - priceA;
-    return 0; // Default order (usually by rating or newest)
+    return 0; 
   });
 
   return (
     <div className="min-h-screen bg-[#fafafa] w-full font-sans pb-24">
       {/* Header Section */}
-      <div className="bg-white border-b border-gray-200 py-12 md:py-16">
+      <div className="bg-white border-b border-gray-200 py-12 md:py-46">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <button 
             onClick={() => navigate('/')}
@@ -87,8 +94,7 @@ export default function ServiceProviders() {
 
       {/* Main Content Grid */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12">
-        {!selectedCategoryId ? (
-          // Show this if they bypass the homepage and arrive without selecting a category
+        {!effectiveCategoryId ? (
           <div className="text-center py-24 bg-white rounded-3xl shadow-sm border border-gray-200">
             <Layers className="w-16 h-16 text-blue-200 mx-auto mb-4" />
             <h3 className="text-2xl font-bold text-gray-900">
@@ -107,7 +113,6 @@ export default function ServiceProviders() {
         ) : (
           <div className="bg-white rounded-3xl shadow-sm border border-gray-200 p-6 md:p-10">
             
-            {/* 🌟 NEW: Sorting Controls */}
             {providers.length > 0 && (
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-gray-100 pb-6 mb-8 gap-4">
                 <p className="text-sm font-bold text-gray-500">
@@ -129,7 +134,6 @@ export default function ServiceProviders() {
               </div>
             )}
 
-            {/* Provider Grid */}
             {isLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {[1, 2, 3, 4, 5, 6].map((n) => (
@@ -188,7 +192,6 @@ export default function ServiceProviders() {
                         {provider.bio || "No description provided. Ready to work!"}
                       </p>
 
-                      {/* 🌟 NEW: Pricing and Location block */}
                       <div className="flex items-center justify-between mt-auto pt-4">
                         {provider.service_area && (
                           <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 bg-gray-50 w-fit px-2.5 py-1 rounded-md border border-gray-100">

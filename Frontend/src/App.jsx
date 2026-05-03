@@ -34,6 +34,9 @@ import ManageCategories from "./pages/admin/managerCategories";
 import ScrollToTop from "./hooks/scrollToTopHook";
 import { Toaster, toast } from "react-hot-toast";
 
+// 🌟 Import SplashCursor
+import SplashCursor from "./components/extras/splashCursor";
+
 
 function App() {
   const dispatch = useDispatch();
@@ -101,6 +104,15 @@ function App() {
   return (
     <BrowserRouter>
       <ScrollToTop></ScrollToTop>
+
+      {/* 🌟 Add SplashCursor here so it sits on top of everything globally */}
+   <SplashCursor 
+  RAINBOW_MODE={false} 
+  COLOR="#8b5cf6" // A nice vibrant purple to match your AI theme
+  SPLAT_RADIUS={0.3} // Slightly larger splashes
+  SPLAT_FORCE={8000} // A bit more dynamic force
+  DENSITY_DISSIPATION={4.5} // Fades out a little faster to stay clean
+/>
 
       <Toaster
         position="top-center"
