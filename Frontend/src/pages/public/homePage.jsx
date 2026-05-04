@@ -30,6 +30,7 @@ import Lanyard from "../../components/extras/Lanyard.jsx";
 import { ScrollMarqueeContainer, ScrollMarquee } from "../../components/extras/ScrollMarquee.jsx";
 import { Particles } from "../../components/extras/Particles.jsx"; 
 import { RainbowButton } from "../../components/extras/Rainbowbutton.jsx"; 
+import DomeGallery from "../../components/extras/Domegallery.jsx";
 
 let searchTimeout;
 
@@ -93,14 +94,12 @@ export default function Home() {
   
   const activeRef = useRef(null);
   const scrollContainerRef = useRef(null);
-// State & Ref for Top Providers Slider
   const providerScrollRef = useRef(null);
   const [activeProviderSlide, setActiveProviderSlide] = useState(0);
 
   const handleProviderScroll = () => {
     if (!providerScrollRef.current) return;
     const scrollPosition = providerScrollRef.current.scrollLeft;
-    // Calculate width of one card + gap (approx 24px)
     const itemWidth = providerScrollRef.current.children[0].offsetWidth + 24; 
     const currentIndex = Math.round(scrollPosition / itemWidth);
     setActiveProviderSlide(currentIndex);
@@ -112,6 +111,7 @@ export default function Home() {
       providerScrollRef.current.scrollBy({ left: direction * itemWidth, behavior: "smooth" });
     }
   };
+
   const testimonials = [
     {
       name: "Tyson Quick",
@@ -240,7 +240,17 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen bg-[#fafafa] w-full font-sans selection:bg-blue-100 selection:text-blue-900">
-
+      <style>
+        {`
+          @keyframes grid-pan {
+            0% { background-position: 0 0; }
+            100% { background-position: 4rem 4rem; }
+          }
+          .animate-grid {
+            animation: grid-pan 3s linear infinite;
+          }
+        `}
+      </style>
 
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-[#fafafa] min-h-screen flex flex-col justify-center pt-20">
@@ -316,11 +326,10 @@ export default function Home() {
                 </div>
               </div>
 
-          {searchMode === "standard" ? (
+              {searchMode === "standard" ? (
                 <form onSubmit={handleSearchSubmit} className="w-full">
-                  <div className="flex flex-col md:flex-row items-center gap-3 md:gap-0 w-full relative">
-                    {/* Added z-20 here to keep the input above surrounding elements */}
-                    <div className="flex items-center w-full shadow-[0_8px_30px_rgb(0,0,0,0.06)] rounded-[1.25rem] md:rounded-full bg-white/90 backdrop-blur-xl border border-gray-200 hover:border-blue-300 transition-all duration-300 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/20 p-1.5 md:p-2 relative z-20">
+                  <div className="flex flex-col md:flex-row items-center gap-3 md:gap-0 w-full">
+                    <div className="flex items-center w-full shadow-[0_8px_30px_rgb(0,0,0,0.06)] rounded-[1.25rem] md:rounded-full bg-white/90 backdrop-blur-xl border border-gray-200 hover:border-blue-300 transition-all duration-300 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/20 p-1.5 md:p-2">
                       <div className="pl-3 md:pl-5 pr-1 md:pr-2 text-blue-600">
                         <MapPin className="w-5 h-5 md:w-7 md:h-7" strokeWidth={2.5} />
                       </div>
@@ -328,8 +337,6 @@ export default function Home() {
                       <div className="flex-1 text-left">
                         <AsyncSelect
                           cacheOptions
-                          menuPortalTarget={document.body} // 🌟 FIX: Portals the menu to the body to prevent clashing
-                          menuPosition="fixed"
                           loadOptions={(inputValue) => {
                             return new Promise((resolve) => {
                               if (!inputValue || inputValue.length < 3) return resolve([]);
@@ -394,16 +401,13 @@ export default function Home() {
                               fontWeight: "700",
                               color: "#111827",
                             }),
-                            menuPortal: (provided) => ({ 
-                              ...provided, 
-                              zIndex: 9999 // 🌟 FIX: Forces menu to the absolute top layer of the DOM
-                            }),
                             menu: (provided) => ({
                               ...provided,
                               borderRadius: "1.25rem",
                               overflow: "hidden",
                               boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
-                              marginTop: "8px", // Tighter margin so it looks connected to the input
+                              marginTop: "16px",
+                              zIndex: 50,
                               border: "1px solid #f3f4f6",
                             }),
                             option: (provided, state) => ({
@@ -419,19 +423,17 @@ export default function Home() {
                         />
                       </div>
 
-                      {/* Desktop Search Button */}
                       <RainbowButton
                         type="submit"
-                        className="hidden md:flex h-[56px] w-[140px] text-lg font-extrabold ml-2 rounded-full"
+                        className="hidden md:flex h-[56px] w-[140px] text-lg font-extrabold ml-2 rounded-full z-10"
                       >
                         Search
                       </RainbowButton>
                     </div>
 
-                    {/* 🌟 FIX: Dropped z-index to 0 on mobile so the dropdown effortlessly slides over it */}
                     <RainbowButton
                       type="submit"
-                      className="md:hidden w-full max-w-[240px] h-12 text-sm font-extrabold mx-auto mt-3 rounded-xl relative z-0"
+                      className="md:hidden w-full max-w-[240px] h-12 text-sm font-extrabold mx-auto mt-3 rounded-xl z-10"
                     >
                       Search
                     </RainbowButton>
@@ -484,13 +486,11 @@ export default function Home() {
 
       {/* Global Particles Background */}
       <div className="relative w-full overflow-hidden bg-[#fafafa]">
-    
-
         <div className="relative z-10 w-full">
           <main className="flex-1 w-full pb-24">
 
             {/* About Us Slider */}
-            <section className="relative overflow-hidden py-24 md:py-32 scale-[0.85] md:scale-100">
+            <section className="relative overflow-hidden py-24 md:py-32">
               <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
                   
@@ -691,7 +691,7 @@ export default function Home() {
             </section> 
 
             {/* Scroll Velocity Marquee Section */}
-            <section className="relative py-20 border-t border-gray-200/50 bg-white/40 backdrop-blur-md overflow-hidden scale-[0.85] mask-l-from-80% mask-r-from-80% md:scale-100">
+            <section className="relative py-20 border-t border-gray-200/50 bg-white/40 backdrop-blur-md overflow-hidden">
               <ScrollMarqueeContainer>
                 <ScrollMarquee baseVelocity={-2} className="py-4 ">
                   <div className="flex items-center gap-12 px-6 ">
@@ -721,9 +721,8 @@ export default function Home() {
               </ScrollMarqueeContainer>
             </section>
 
-            {/* Top Rated Providers */}
-
-            <section className="relative py-24 md:py-32 bg-transparent z-10 scale-[0.85] md:scale-100">
+            {/* 🌟 TOP RATED PROVIDERS SECTION */}
+            <section className="relative py-24 md:py-32 bg-transparent z-10">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 
                 <div className="mb-12 md:mb-20 text-center max-w-3xl mx-auto">
@@ -741,7 +740,6 @@ export default function Home() {
                   </p>
                 </div>
 
-                {/* 🌟 Mobile Controls (Arrows) - Hidden on md+ */}
                 <div className="flex justify-end gap-3 mb-6 md:hidden px-2">
                   <button 
                     onClick={() => scrollProvider(-1)}
@@ -757,7 +755,6 @@ export default function Home() {
                   </button>
                 </div>
 
-                {/* 🌟 HYBRID GRID/SLIDER CONTAINER */}
                 <div 
                   ref={providerScrollRef}
                   onScroll={handleProviderScroll}
@@ -768,7 +765,6 @@ export default function Home() {
                       key={provider.profile_id}
                       color="#F59E0B"
                       thickness={2}
-                      // 🌟 Added mobile width constraints and snap alignment
                       className="w-[85vw] sm:w-[400px] md:w-auto shrink-0 snap-center shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-white/60 md:hover:shadow-[0_20px_40px_rgb(0,0,0,0.12)] md:hover:-translate-y-1.5 bg-white/40"
                       innerClassName="bg-white/90 backdrop-blur-md px-6 py-8 lg:px-8 lg:py-10 flex flex-col items-center text-center transition-all duration-500 h-full"
                     >
@@ -830,7 +826,6 @@ export default function Home() {
                   ))}
                 </div>
 
-                {/* 🌟 Mobile Pagination Dots - Hidden on md+ */}
                 <div className="flex items-center justify-center gap-2 mt-2 md:hidden">
                   {topProviders.map((_, index) => (
                     <div
@@ -849,7 +844,7 @@ export default function Home() {
           </main>
   
           {/* Reviews Section */}
-          <section className="relative overflow-hidden py-24 md:py-32 z-10 scale-[0.85] md:scale-100">
+          <section className="relative overflow-hidden py-24 md:py-32 z-10">
             <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
               <div className="absolute top-[-10%] right-[-15%] w-[50%] h-[50%] bg-blue-400/10 rounded-full mix-blend-multiply filter blur-[120px] animate-blob"></div>
               <div className="absolute bottom-[-10%] left-[-15%] w-[50%] h-[50%] bg-purple-400/10 rounded-full mix-blend-multiply filter blur-[120px] animate-blob animation-delay-2000"></div>
@@ -942,8 +937,41 @@ export default function Home() {
 
             </div>
           </section>
-
+          <div className="md:hidden block"> 
           <TrustedSection />
+          </div>
+
+
+                    <section className=" hidden md:block relative py-24 md:py-32 overflow-hidden border-t border-gray-200/50 bg-[#fafafa]" >
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20 mb-8 md:mb-12">
+              <div className="text-center max-w-2xl mx-auto">
+                <div className="inline-flex items-center gap-1.5 bg-blue-50 px-3 py-1.5 md:px-4 md:py-2 rounded-full border border-blue-100 shadow-sm mb-6">
+                  <ShieldCheck className="w-4 h-4 text-blue-600" />
+                  <span className="text-xs md:text-sm font-extrabold text-blue-800">
+                    Global Network
+                  </span>
+                </div>
+                <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 tracking-tight leading-tight mb-5 drop-shadow-sm">
+                  Trusted by 10000+
+                </h2>
+                <p className="text-lg md:text-xl text-gray-600 font-medium leading-relaxed">
+                  Join a growing community of satisfied customers and verified professionals.
+                </p>
+              </div>
+            </div>
+
+            {/* Dome Gallery Container */}
+            <div className="relative w-full h-[400px] md:h-[600px] max-w-[100vw] mx-auto overflow-hidden scale-[0.99] md:scale-100 mask-l-from-90% mask-r-from-90% mask-t-from-90% mask-b-from-90%">
+              <DomeGallery
+                 fit={0.4}
+                 minRadius={600}
+                 maxVerticalRotationDeg={0}
+                 segments={34}
+                 dragDampening={2}
+                 grayscale
+              />
+            </div>
+          </section>
           
           {/* FAQ Section */}
           <section className="relative py-24 md:py-32 bg-gray-50/60 backdrop-blur-md border-t border-gray-200/50">
@@ -1019,7 +1047,11 @@ export default function Home() {
               </div>
             </div>
           </section>
-  <PremiumMarquee/>
+
+          {/* Dome Gallery Section */}
+
+
+          <PremiumMarquee />
         </div>
       </div>
     </div>

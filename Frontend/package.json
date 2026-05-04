@@ -16,6 +16,7 @@
     "@react-three/rapier": "^2.2.0",
     "@reduxjs/toolkit": "^2.11.2",
     "@tailwindcss/vite": "^4.2.1",
+    "@use-gesture/react": "^10.3.1",
     "axios": "^1.13.6",
     "chart.js": "^4.5.1",
     "class-variance-authority": "^0.7.1",
