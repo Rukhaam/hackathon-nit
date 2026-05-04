@@ -486,13 +486,13 @@ export default function Home() {
 
       {/* Global Particles Background */}
       <div className="relative w-full overflow-hidden bg-[#fafafa]">
-        <Particles
+        {/* <Particles
           className="absolute inset-0 z-0 w-full h-full opacity-60"
           quantity={250} 
           ease={80}
           color="#000000" 
           refresh
-        />
+        /> */}
 
         <div className="relative z-10 w-full">
           <main className="flex-1 w-full pb-24">
@@ -560,11 +560,7 @@ export default function Home() {
                           ))}
                         </div>
 
-                        <div className="mt-12 md:mt-14">
-                          <RainbowButton className="h-14 px-10 text-base font-bold rounded-xl shadow-sm">
-                            {slide.ctaText}
-                          </RainbowButton>
-                        </div>
+                 
                       </div>
                     ))}
                   </div>
