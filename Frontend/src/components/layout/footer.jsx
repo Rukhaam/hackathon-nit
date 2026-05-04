@@ -12,7 +12,7 @@ export default function Footer() {
 
   return (
 
-    <footer className="relative mt-auto shrink-0 font-sans overflow-hidden border-t border-black/5 bg-white/70 backdrop-blur-2xl pt-24 pb-8 z-10 text-slate-950 selection:bg-black selection:text-white">
+    <footer className="relative mt-auto shrink-0 font-sans overflow-hidden scroll-auto border-t border-black/5 bg-white/70 backdrop-blur-2xl pt-24 pb-8 z-10 text-slate-950 selection:bg-black selection:text-white mt-10 ">
       
       {/* 🌟 SUBTLE AMBIENT ACCENTS (To give the blur depth) */}
       <div className="absolute top-[-30%] left-[20%] w-[600px] h-[300px] rounded-full bg-slate-100/50 blur-[100px] pointer-events-none -z-10"></div>

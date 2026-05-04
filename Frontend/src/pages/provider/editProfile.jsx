@@ -7,7 +7,7 @@ import {
   clearProviderMessages,
 } from "../../redux/slices/providerSlice";
 import { useToast } from "../../hooks/toastHook";
-import { ShieldCheck, ToggleRight, MapPin, IndianRupee, Sparkles } from "lucide-react";
+import { ShieldCheck, ToggleRight, MapPin, IndianRupee, Sparkles, Image as ImageIcon, FileText, Upload } from "lucide-react";
 import AsyncSelect from "react-select/async";
 import { aiService } from "../../api/aiApi"; 
 
@@ -25,6 +25,11 @@ export default function EditProfile() {
     serviceArea: "",
     basePrice: "",
   });
+
+  // 🌟 NEW: File Upload States
+  const [profileImage, setProfileImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [document, setDocument] = useState(null);
 
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [generating, setGenerating] = useState(false);
@@ -45,11 +50,24 @@ export default function EditProfile() {
       if (profile.service_area) {
         setSelectedLocation({ label: profile.service_area, value: profile.service_area });
       }
+      // 🌟 NEW: Set existing profile image preview
+      if (profile.profile_image) {
+        setImagePreview(profile.profile_image);
+      }
     }
   }, [profile]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  // 🌟 NEW: Handle Image Selection & Preview
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setProfileImage(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
   };
 
   const handleMagicWrite = async () => {
@@ -110,8 +128,19 @@ export default function EditProfile() {
       showError("Please select a valid Service Area from the dropdown.");
       return;
     }
+
+    // 🌟 CRITICAL: Package text and files into FormData
+    const submitData = new FormData();
+    submitData.append("categoryId", formData.categoryId);
+    submitData.append("bio", formData.bio);
+    submitData.append("serviceArea", formData.serviceArea);
+    submitData.append("basePrice", formData.basePrice);
+    if (profileImage) submitData.append("profileImage", profileImage);
+    if (document) submitData.append("document", document);
+
     const loadingId = showLoading("Saving profile...");
-    const res = await dispatch(updateProfile(formData)).unwrap().catch(() => ({ error: true }));
+    // Pass submitData (FormData) instead of standard JSON formData
+    const res = await dispatch(updateProfile(submitData)).unwrap().catch(() => ({ error: true }));
     dismissToast(loadingId);
     if (!res.error) showSuccess("Profile updated successfully!");
     else showError("Failed to update profile.");
@@ -196,6 +225,30 @@ export default function EditProfile() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6 md:space-y-8">
+            
+            {/* 🌟 NEW: Profile Image Upload UI */}
+            <div className="flex flex-col md:flex-row items-center gap-6 p-4 md:p-6 bg-white/50 border border-white/60 rounded-2xl shadow-sm">
+              <div className="shrink-0">
+                {imagePreview ? (
+                  <img src={imagePreview} alt="Preview" className="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover shadow-sm border-2 border-white" />
+                ) : (
+                  <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-white border border-gray-200 flex items-center justify-center shadow-sm">
+                    <ImageIcon className="text-gray-300 w-8 h-8" />
+                  </div>
+                )}
+              </div>
+              <div className="flex-1 w-full text-center md:text-left">
+                <label className="block text-xs md:text-sm font-extrabold text-gray-700 uppercase tracking-widest mb-2">Profile Avatar</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  disabled={isLoading}
+                  className="w-full text-xs md:text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 md:file:py-2.5 md:file:px-5 file:rounded-xl file:border-0 file:text-xs md:file:text-sm file:font-extrabold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer transition-all shadow-sm"
+                />
+              </div>
+            </div>
+
             <div>
               <label className="block text-xs md:text-sm font-extrabold text-gray-700 uppercase tracking-widest mb-2">Primary Service Category</label>
               <select
@@ -279,13 +332,34 @@ export default function EditProfile() {
               ></textarea>
             </div>
 
+            {/* 🌟 NEW: PDF Document Upload UI */}
+            <div className="p-4 md:p-6 bg-purple-50/40 border border-purple-100/60 rounded-2xl shadow-sm">
+              <label className="flex items-center gap-1.5 text-xs md:text-sm font-extrabold text-gray-900 uppercase tracking-widest mb-2">
+                <FileText size={16} className="text-purple-600" /> Verification Document (PDF)
+              </label>
+              <p className="text-[10px] md:text-xs text-gray-500 mb-4 font-medium leading-relaxed">
+                Upload your ID, trade license, or certifications. Admin approval is required before you appear in search results.
+              </p>
+              <input
+                type="file"
+                accept="application/pdf"
+                onChange={(e) => setDocument(e.target.files[0])}
+                disabled={isLoading}
+                className="w-full text-xs md:text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 md:file:py-2.5 md:file:px-5 file:rounded-xl file:border-0 file:text-xs md:file:text-sm file:font-extrabold file:bg-purple-100 file:text-purple-700 hover:file:bg-purple-200 cursor-pointer transition-all shadow-sm"
+              />
+            </div>
+
             <div className="pt-2 md:pt-4">
               <button
                 type="submit"
                 disabled={isLoading || generating}
-                className="w-full bg-gray-900 text-white font-bold text-sm md:text-base px-6 py-3.5 md:py-4 rounded-xl hover:bg-gray-800 transition-all disabled:opacity-50 shadow-lg hover:shadow-xl active:scale-[0.98]"
+                className="w-full flex justify-center items-center gap-2 bg-gray-900 text-white font-bold text-sm md:text-base px-6 py-3.5 md:py-4 rounded-xl hover:bg-gray-800 transition-all disabled:opacity-50 shadow-lg hover:shadow-xl active:scale-[0.98]"
               >
-                {isLoading ? "Saving Profile..." : "Save Changes"}
+                {isLoading ? (
+                  <><Upload className="animate-bounce" size={18} /> Saving Profile...</>
+                ) : (
+                  "Save & Request Approval"
+                )}
               </button>
             </div>
           </form>

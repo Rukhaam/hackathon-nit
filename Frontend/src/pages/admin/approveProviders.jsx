@@ -4,7 +4,7 @@ import usePagination from "../../hooks/usePagination";
 import { fetchAllProviders, toggleProviderApproval, clearAdminMessages } from "../../redux/slices/adminSlice";
 import { useToast } from "../../hooks/toastHook"; 
 import LoadingSpinner from "../../components/common/loadingSpinner";
-import { ShieldCheck, ShieldAlert, FileText, Users, Activity } from "lucide-react";
+import { ShieldCheck, ShieldAlert, FileText, Users, Activity, ExternalLink } from "lucide-react";
 
 // Chart.js Imports
 import {
@@ -164,8 +164,10 @@ export default function ApproveProviders() {
             <h2 className="text-xl font-bold text-gray-900">Provider Applications</h2>
           </div>
 
-          <div className="hidden md:grid grid-cols-4 gap-6 px-8 py-4 bg-white/40 border-b border-gray-200/50 text-xs font-extrabold text-gray-500 uppercase tracking-widest">
+          {/* 🌟 NEW: Updated grid columns to 5 to fit Documents */}
+          <div className="hidden md:grid grid-cols-5 gap-6 px-8 py-4 bg-white/40 border-b border-gray-200/50 text-xs font-extrabold text-gray-500 uppercase tracking-widest">
             <div>Provider</div>
+            <div>Document</div>
             <div>Bio</div>
             <div>Status</div>
             <div className="text-right">Actions</div>
@@ -185,18 +187,45 @@ export default function ApproveProviders() {
               </div>
             ) : (
               currentData().map((p) => (
-                <div key={p.profile_id} className="flex flex-col md:grid md:grid-cols-4 gap-4 md:gap-6 md:items-center px-6 md:px-8 py-6 hover:bg-white/80 transition-all">
+                <div key={p.profile_id} className="flex flex-col md:grid md:grid-cols-5 gap-4 md:gap-6 md:items-center px-6 md:px-8 py-6 hover:bg-white/80 transition-all">
                   
-                  <div>
-                    <div className="font-extrabold text-gray-900 text-lg md:text-base">{p.name}</div>
-                    <div className="text-sm font-medium text-gray-500 mt-0.5">{p.email}</div>
+                  {/* Avatar & Name */}
+                  <div className="flex items-center gap-3">
+                    <img 
+                      src={p.profile_image || "https://res.cloudinary.com/demo/image/upload/v1580995054/avatar.png"} 
+                      alt="avatar" 
+                      className="w-12 h-12 rounded-full object-cover shadow-sm border border-gray-200"
+                    />
+                    <div>
+                      <div className="font-extrabold text-gray-900 text-base leading-tight">{p.name}</div>
+                      <div className="text-[11px] font-bold text-gray-500 mt-0.5">{p.email}</div>
+                    </div>
                   </div>
 
+                  {/* Document Link */}
+                  <div>
+                    <span className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest md:hidden block mb-1.5">Verification</span>
+                    {p.document_url ? (
+                      <a 
+                        href={p.document_url} 
+                        target="_blank" 
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1.5 text-xs font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 px-3 py-1.5 rounded-lg transition-colors border border-purple-100"
+                      >
+                        View PDF <ExternalLink size={12} />
+                      </a>
+                    ) : (
+                      <span className="text-xs font-bold text-gray-400">Not Uploaded</span>
+                    )}
+                  </div>
+
+                  {/* Bio */}
                   <div>
                     <span className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest md:hidden block mb-1.5">Biography</span>
-                    <p className="text-sm font-medium text-gray-600 line-clamp-3 md:line-clamp-2">{p.bio || "No biography provided."}</p>
+                    <p className="text-xs font-medium text-gray-600 line-clamp-2">{p.bio || "No biography provided."}</p>
                   </div>
 
+                  {/* Status */}
                   <div>
                     <span className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest md:hidden block mb-2">Account Status</span>
                     <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] md:text-xs font-extrabold uppercase tracking-wider border shadow-sm ${
@@ -207,14 +236,15 @@ export default function ApproveProviders() {
                     </span>
                   </div>
 
+                  {/* Actions */}
                   <div className="mt-4 md:mt-0 md:text-right flex justify-end">
                     {!p.is_approved ? (
-                      <button onClick={() => handleApproval(p.profile_id, true)} disabled={isLoading} className="w-full md:w-auto bg-gray-900 text-white text-sm font-bold px-6 py-3 rounded-xl hover:bg-gray-800 disabled:opacity-50 transition-all shadow-md active:scale-95">
-                        Approve Access
+                      <button onClick={() => handleApproval(p.profile_id, true)} disabled={isLoading} className="w-full md:w-auto bg-gray-900 text-white text-xs font-bold px-5 py-2.5 rounded-xl hover:bg-gray-800 disabled:opacity-50 transition-all shadow-md active:scale-95">
+                        Approve
                       </button>
                     ) : (
-                      <button onClick={() => handleApproval(p.profile_id, false)} disabled={isLoading} className="w-full md:w-auto text-red-600 bg-white border border-red-200 text-sm font-bold px-6 py-3 rounded-xl hover:bg-red-50 disabled:opacity-50 transition-all shadow-sm active:scale-95">
-                        Revoke Access
+                      <button onClick={() => handleApproval(p.profile_id, false)} disabled={isLoading} className="w-full md:w-auto text-red-600 bg-white border border-red-200 text-xs font-bold px-5 py-2.5 rounded-xl hover:bg-red-50 disabled:opacity-50 transition-all shadow-sm active:scale-95">
+                        Revoke
                       </button>
                     )}
                   </div>
