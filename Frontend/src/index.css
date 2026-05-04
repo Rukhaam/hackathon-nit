@@ -110,3 +110,11 @@
 .animate-rainbow {
   animation: rainbow 3s linear infinite;
 }
+
+        @keyframes grid-pan {
+            0% { background-position: 0 0; }
+            100% { background-position: 4rem 4rem; }
+          }
+          .animate-grid {
+            animation: grid-pan 3s linear infinite;
+          }

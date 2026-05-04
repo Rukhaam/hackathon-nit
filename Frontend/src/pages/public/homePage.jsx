@@ -23,7 +23,7 @@ import AsyncSelect from "react-select/async";
 import { getCategoryIcon } from "../../utils/marqueeData.jsx";
 import { aboutSliderData } from "../../utils/slideUtil.js";
 import { aiService } from "../../api/aiApi.js";
-
+import PremiumMarquee from "../../components/extras/slickInfiniteMarquee.jsx";
 import TrustedSection from "../../components/extras/trustedSection.jsx";
 import DotField from "../../components/extras/Dotfield.jsx";
 import Lanyard from "../../components/extras/Lanyard.jsx";
@@ -240,17 +240,7 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen bg-[#fafafa] w-full font-sans selection:bg-blue-100 selection:text-blue-900">
-      <style>
-        {`
-          @keyframes grid-pan {
-            0% { background-position: 0 0; }
-            100% { background-position: 4rem 4rem; }
-          }
-          .animate-grid {
-            animation: grid-pan 3s linear infinite;
-          }
-        `}
-      </style>
+
 
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-[#fafafa] min-h-screen flex flex-col justify-center pt-20">
@@ -326,10 +316,11 @@ export default function Home() {
                 </div>
               </div>
 
-              {searchMode === "standard" ? (
+          {searchMode === "standard" ? (
                 <form onSubmit={handleSearchSubmit} className="w-full">
-                  <div className="flex flex-col md:flex-row items-center gap-3 md:gap-0 w-full">
-                    <div className="flex items-center w-full shadow-[0_8px_30px_rgb(0,0,0,0.06)] rounded-[1.25rem] md:rounded-full bg-white/90 backdrop-blur-xl border border-gray-200 hover:border-blue-300 transition-all duration-300 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/20 p-1.5 md:p-2">
+                  <div className="flex flex-col md:flex-row items-center gap-3 md:gap-0 w-full relative">
+                    {/* Added z-20 here to keep the input above surrounding elements */}
+                    <div className="flex items-center w-full shadow-[0_8px_30px_rgb(0,0,0,0.06)] rounded-[1.25rem] md:rounded-full bg-white/90 backdrop-blur-xl border border-gray-200 hover:border-blue-300 transition-all duration-300 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/20 p-1.5 md:p-2 relative z-20">
                       <div className="pl-3 md:pl-5 pr-1 md:pr-2 text-blue-600">
                         <MapPin className="w-5 h-5 md:w-7 md:h-7" strokeWidth={2.5} />
                       </div>
@@ -337,6 +328,8 @@ export default function Home() {
                       <div className="flex-1 text-left">
                         <AsyncSelect
                           cacheOptions
+                          menuPortalTarget={document.body} // 🌟 FIX: Portals the menu to the body to prevent clashing
+                          menuPosition="fixed"
                           loadOptions={(inputValue) => {
                             return new Promise((resolve) => {
                               if (!inputValue || inputValue.length < 3) return resolve([]);
@@ -401,13 +394,16 @@ export default function Home() {
                               fontWeight: "700",
                               color: "#111827",
                             }),
+                            menuPortal: (provided) => ({ 
+                              ...provided, 
+                              zIndex: 9999 // 🌟 FIX: Forces menu to the absolute top layer of the DOM
+                            }),
                             menu: (provided) => ({
                               ...provided,
                               borderRadius: "1.25rem",
                               overflow: "hidden",
                               boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
-                              marginTop: "16px",
-                              zIndex: 50,
+                              marginTop: "8px", // Tighter margin so it looks connected to the input
                               border: "1px solid #f3f4f6",
                             }),
                             option: (provided, state) => ({
@@ -423,17 +419,19 @@ export default function Home() {
                         />
                       </div>
 
+                      {/* Desktop Search Button */}
                       <RainbowButton
                         type="submit"
-                        className="hidden md:flex h-[56px] w-[140px] text-lg font-extrabold ml-2 rounded-full z-10"
+                        className="hidden md:flex h-[56px] w-[140px] text-lg font-extrabold ml-2 rounded-full"
                       >
                         Search
                       </RainbowButton>
                     </div>
 
+                    {/* 🌟 FIX: Dropped z-index to 0 on mobile so the dropdown effortlessly slides over it */}
                     <RainbowButton
                       type="submit"
-                      className="md:hidden w-full max-w-[240px] h-12 text-sm font-extrabold mx-auto mt-3 rounded-xl z-10"
+                      className="md:hidden w-full max-w-[240px] h-12 text-sm font-extrabold mx-auto mt-3 rounded-xl relative z-0"
                     >
                       Search
                     </RainbowButton>
@@ -1021,7 +1019,7 @@ export default function Home() {
               </div>
             </div>
           </section>
-
+  <PremiumMarquee/>
         </div>
       </div>
     </div>
