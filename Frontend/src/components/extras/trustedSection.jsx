@@ -97,7 +97,7 @@ export default function TrustedSection() {
       <div className="absolute bottom-0 right-1/4 w-[30rem] h-[30rem] bg-indigo-300/40 rounded-full mix-blend-multiply filter blur-[128px] pointer-events-none"></div>
 
       {/* Expanded Width to prevent text clashing */}
-      <div className="relative z-10 w-full max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-12 xl:px-16">
+      <div className="relative z-10 w-full max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-12 xl:px-16 scale-[0.90]">
         
         {/* 🌟 MASSIVE STAR BORDER CONTAINER 🌟 */}
         <StarBorder

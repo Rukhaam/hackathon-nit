@@ -196,7 +196,7 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="relative min-h-screen">
+    <div className="relative min-h-screen scale-[0.85] md:scale-100 md:mt-0 -mt-20">
       {/* Background Orbs for Glassmorphism */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
         <div className="absolute top-[-5%] left-[-10%] w-[40%] h-[40%] bg-blue-400/20 rounded-full mix-blend-multiply filter blur-[100px] animate-blob"></div>

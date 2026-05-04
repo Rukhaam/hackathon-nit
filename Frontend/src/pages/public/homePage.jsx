@@ -490,7 +490,7 @@ export default function Home() {
           <main className="flex-1 w-full pb-24">
 
             {/* About Us Slider */}
-            <section className="relative overflow-hidden py-24 md:py-32">
+            <section className="relative overflow-hidden py-24 md:py-32 scale-[0.85] md:scale-100">
               <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
                   
@@ -691,10 +691,10 @@ export default function Home() {
             </section> 
 
             {/* Scroll Velocity Marquee Section */}
-            <section className="relative py-20 border-t border-gray-200/50 bg-white/40 backdrop-blur-md overflow-hidden">
+            <section className="relative py-20 border-t border-gray-200/50 bg-white/40 backdrop-blur-md overflow-hidden scale-[0.85] mask-l-from-80% mask-r-from-80% md:scale-100">
               <ScrollMarqueeContainer>
-                <ScrollMarquee baseVelocity={-2} className="py-4">
-                  <div className="flex items-center gap-12 px-6">
+                <ScrollMarquee baseVelocity={-2} className="py-4 ">
+                  <div className="flex items-center gap-12 px-6 ">
                     {["EXPERT PLUMBERS", "TOP RATED ELECTRICIANS", "TRUSTED TUTORS", "PROFESSIONAL CLEANERS", "QUICK REPAIRS", "BEAUTY & SALON"].map((text, idx) => (
                       <div key={`row1-${idx}`} className="flex items-center gap-12">
                         <span className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-gray-300 to-gray-400 uppercase tracking-tight">
@@ -722,8 +722,8 @@ export default function Home() {
             </section>
 
             {/* Top Rated Providers */}
-{/* 🌟 TOP RATED PROVIDERS SECTION */}
-            <section className="relative py-24 md:py-32 bg-transparent z-10">
+
+            <section className="relative py-24 md:py-32 bg-transparent z-10 scale-[0.85] md:scale-100">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 
                 <div className="mb-12 md:mb-20 text-center max-w-3xl mx-auto">
@@ -849,7 +849,7 @@ export default function Home() {
           </main>
   
           {/* Reviews Section */}
-          <section className="relative overflow-hidden py-24 md:py-32 z-10">
+          <section className="relative overflow-hidden py-24 md:py-32 z-10 scale-[0.85] md:scale-100">
             <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
               <div className="absolute top-[-10%] right-[-15%] w-[50%] h-[50%] bg-blue-400/10 rounded-full mix-blend-multiply filter blur-[120px] animate-blob"></div>
               <div className="absolute bottom-[-10%] left-[-15%] w-[50%] h-[50%] bg-purple-400/10 rounded-full mix-blend-multiply filter blur-[120px] animate-blob animation-delay-2000"></div>
