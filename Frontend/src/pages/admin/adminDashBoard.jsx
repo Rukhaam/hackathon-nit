@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { createPortal } from "react-dom"; // 🌟 NEW: Import createPortal
 import useDebounce from "../../hooks/debounceHook";
 import usePagination from "../../hooks/usePagination";
 import { fetchAllUsers, fetchAllBookings, toggleUserStatus } from "../../redux/slices/adminSlice";
@@ -63,6 +64,19 @@ export default function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
   const [auditModal, setAuditModal] = useState(null);
 
+  // 🌟 NEW: Lock body scroll when modal is open so background doesn't move
+  useEffect(() => {
+    if (auditModal) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    // Cleanup function
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [auditModal]);
+
   useEffect(() => {
     if (users.length === 0) dispatch(fetchAllUsers());
     if (allBookings.length === 0) dispatch(fetchAllBookings());
@@ -114,17 +128,14 @@ export default function AdminDashboard() {
     }
   };
 
-  // 🌟 Quick stats calculations for the top cards
   const totalActiveUsers = users.filter(u => !u.is_suspended && u.role !== 'admin').length;
   const totalSuspended = users.filter(u => u.is_suspended).length;
   const completedJobsCount = allBookings.filter(b => b.status === "Completed").length;
 
-  // 🌟 Dynamic Data for Doughnut Chart based on Redux State
   const customerCount = users.filter(u => u.role === 'customer').length || 1;
   const providerCount = users.filter(u => u.role === 'provider').length || 1;
   const adminCount = users.filter(u => u.role === 'admin').length || 1;
 
-  // Formatting today's date dynamically
   const today = new Date().toLocaleDateString("en-US", {
     weekday: "long",
     year: "numeric",
@@ -138,7 +149,7 @@ export default function AdminDashboard() {
     datasets: [
       {
         label: 'Platform Activity',
-        data: [12, 19, 15, 25, 22, 30, 28], // Mock trend data
+        data: [12, 19, 15, 25, 22, 30, 28], 
         borderColor: '#3b82f6',
         backgroundColor: 'rgba(59, 130, 246, 0.1)',
         tension: 0.4,
@@ -192,7 +203,6 @@ export default function AdminDashboard() {
         <div className="absolute bottom-[20%] right-[-10%] w-[40%] h-[40%] bg-purple-400/20 rounded-full mix-blend-multiply filter blur-[100px] animate-blob animation-delay-2000"></div>
       </div>
 
-      {/* 🌟 Apply pt-24 md:pt-28 to clear navbar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 md:pt-28 space-y-8 pb-24 md:pb-12 relative z-10">
         
         {/* 1. Dashboard Header & Greeting */}
@@ -393,7 +403,7 @@ export default function AdminDashboard() {
             {/* JOB AUDITS TAB                               */}
             {/* ========================================== */}
             {activeTab === "bookings" && (
-              <div className="space-y-6 animate-fade-in-up">
+              <div className="space-y-6 animate-fade-in-up z-1000">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {currentBookings().length === 0 ? (
                     <div className="col-span-full py-20 text-center flex flex-col items-center bg-white/60 backdrop-blur-xl rounded-[2rem] border border-dashed border-gray-300">
@@ -404,7 +414,7 @@ export default function AdminDashboard() {
                     </div>
                   ) : (
                     currentBookings().map((booking) => (
-                      <div key={booking.id} className="bg-white/60 backdrop-blur-xl rounded-[2rem] shadow-sm border border-white/60 p-6 flex flex-col justify-between hover:bg-white/80 transition-all hover:-translate-y-1">
+                      <div key={booking.id} className="bg-white/60 backdrop-blur-xl rounded-[2rem] shadow-sm border border-white/60 p-6 flex flex-col justify-between hover:bg-white/80 transition-all hover:-translate-y-1 z-50">
                         <div>
                           <div className="flex justify-between items-start mb-4 gap-2">
                             <h3 className="font-extrabold text-gray-900 text-xl">Job #{booking.id}</h3>
@@ -448,58 +458,59 @@ export default function AdminDashboard() {
             )}
           </>
         )}
+      </div>
 
-        {/* Audit Modal */}
-        {auditModal && (
-          <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4 transition-all" onClick={() => setAuditModal(null)}>
-            <div className="bg-white rounded-[2rem] shadow-2xl max-w-4xl w-full p-6 md:p-10 relative overflow-hidden animate-fade-in-up" onClick={(e) => e.stopPropagation()}>
-              <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
-              
-              <div className="flex justify-between items-center mb-8">
-                <h3 className="text-2xl md:text-3xl font-extrabold text-gray-900 flex items-center gap-3">
-                  <div className="p-2.5 bg-blue-50 rounded-xl border border-blue-100 shadow-sm">
-                    <Camera className="text-blue-600 w-6 h-6" /> 
-                  </div>
-                  Job #{auditModal.id} Audit
-                </h3>
-                <button onClick={() => setAuditModal(null)} className="text-gray-400 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 p-2 rounded-full transition-colors">
-                  <X size={20} />
-                </button>
+      {/* 🌟 NEW: Audit Modal wrapper with createPortal for completely escaping DOM hierarchies and z-index clashes */}
+      {auditModal && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 transition-all" onClick={() => setAuditModal(null)}>
+          <div className="bg-white rounded-[2rem] shadow-2xl max-w-4xl w-full p-6 md:p-10 relative overflow-hidden animate-fade-in-up" onClick={(e) => e.stopPropagation()}>
+            <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
+            
+            <div className="flex justify-between items-center mb-8">
+              <h3 className="text-2xl md:text-3xl font-extrabold text-gray-900 flex items-center gap-3">
+                <div className="p-2.5 bg-blue-50 rounded-xl border border-blue-100 shadow-sm">
+                  <Camera className="text-blue-600 w-6 h-6" /> 
+                </div>
+                Job #{auditModal.id} Audit
+              </h3>
+              <button onClick={() => setAuditModal(null)} className="text-gray-400 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 p-2 rounded-full transition-colors">
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10">
+              <div className="space-y-4">
+                <div className="flex items-center gap-2.5">
+                  <span className="w-3.5 h-3.5 rounded-full bg-red-500 shadow-sm"></span>
+                  <h4 className="font-extrabold text-gray-800 uppercase tracking-widest text-sm">Before Service</h4>
+                </div>
+                <div className="bg-gray-50 rounded-[1.5rem] h-56 md:h-80 border-2 border-dashed border-gray-200 overflow-hidden flex items-center justify-center group relative shadow-inner">
+                  {auditModal.before_image_url || auditModal.beforeImage ? (
+                    <img src={auditModal.before_image_url || auditModal.beforeImage} alt="Before" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  ) : (
+                    <span className="text-gray-400 font-bold text-sm flex flex-col items-center gap-3"><ImageIcon size={28}/> No image uploaded</span>
+                  )}
+                </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10">
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2.5">
-                    <span className="w-3.5 h-3.5 rounded-full bg-red-500 shadow-sm"></span>
-                    <h4 className="font-extrabold text-gray-800 uppercase tracking-widest text-sm">Before Service</h4>
-                  </div>
-                  <div className="bg-gray-50 rounded-[1.5rem] h-56 md:h-80 border-2 border-dashed border-gray-200 overflow-hidden flex items-center justify-center group relative shadow-inner">
-                    {auditModal.before_image_url || auditModal.beforeImage ? (
-                      <img src={auditModal.before_image_url || auditModal.beforeImage} alt="Before" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                    ) : (
-                      <span className="text-gray-400 font-bold text-sm flex flex-col items-center gap-3"><ImageIcon size={28}/> No image uploaded</span>
-                    )}
-                  </div>
+              <div className="space-y-4">
+                <div className="flex items-center gap-2.5">
+                  <span className="w-3.5 h-3.5 rounded-full bg-emerald-500 shadow-sm"></span>
+                  <h4 className="font-extrabold text-gray-800 uppercase tracking-widest text-sm">After Service</h4>
                 </div>
-
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2.5">
-                    <span className="w-3.5 h-3.5 rounded-full bg-emerald-500 shadow-sm"></span>
-                    <h4 className="font-extrabold text-gray-800 uppercase tracking-widest text-sm">After Service</h4>
-                  </div>
-                  <div className="bg-gray-50 rounded-[1.5rem] h-56 md:h-80 border-2 border-dashed border-gray-200 overflow-hidden flex items-center justify-center group relative shadow-inner">
-                    {auditModal.after_image_url || auditModal.afterImage ? (
-                      <img src={auditModal.after_image_url || auditModal.afterImage} alt="After" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                    ) : (
-                      <span className="text-gray-400 font-bold text-sm flex flex-col items-center gap-3"><ImageIcon size={28}/> No image uploaded</span>
-                    )}
-                  </div>
+                <div className="bg-gray-50 rounded-[1.5rem] h-56 md:h-80 border-2 border-dashed border-gray-200 overflow-hidden flex items-center justify-center group relative shadow-inner">
+                  {auditModal.after_image_url || auditModal.afterImage ? (
+                    <img src={auditModal.after_image_url || auditModal.afterImage} alt="After" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  ) : (
+                    <span className="text-gray-400 font-bold text-sm flex flex-col items-center gap-3"><ImageIcon size={28}/> No image uploaded</span>
+                  )}
                 </div>
               </div>
             </div>
           </div>
-        )}
-      </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }

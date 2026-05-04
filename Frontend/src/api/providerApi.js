@@ -8,7 +8,11 @@ export const getProviderProfileAPI = async () => {
 
 // Create or update the profile
 export const updateProviderProfileAPI = async (profileData) => {
-  const response = await api.post('/providers/profile', profileData);
+  const response = await api.put('/providers/update', profileData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
   return response.data;
 };
 

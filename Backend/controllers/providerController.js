@@ -1,3 +1,5 @@
+import fs from "fs";
+import { cloudinary } from "../config/cloudinary.js";
 import {
   insertProviderProfile,
   getProviderByUserId,
@@ -24,20 +26,61 @@ export const createOrUpdateProfile = catchAsyncErrors(
       );
     }
 
+    let profileImage = undefined;
+    let documentUrl = undefined;
+
+    // 1. Upload Profile Image to Cloudinary (If provided)
+    if (req.files && req.files.profileImage) {
+      const imageResult = await cloudinary.uploader.upload(
+        req.files.profileImage[0].path,
+        { folder: "localhub/profiles" }
+      );
+      profileImage = imageResult.secure_url;
+      fs.unlinkSync(req.files.profileImage[0].path); // Remove temp file from server
+    }
+
+    // 2. Upload Verification Document (PDF) to Cloudinary (If provided)
+    if (req.files && req.files.document) {
+      const docResult = await cloudinary.uploader.upload(
+        req.files.document[0].path,
+        { 
+          folder: "localhub/documents",
+          resource_type: "auto" // Crucial: required to accept .pdf files
+        }
+      );
+      documentUrl = docResult.secure_url;
+      fs.unlinkSync(req.files.document[0].path); // Remove temp file from server
+    }
+
     const existingProfile = await getProviderByUserId(userId);
 
     if (existingProfile) {
-      await updateProviderProfileInDB(
-        userId,
-        categoryId,
-        bio,
-        serviceArea,
-        basePrice
-      );
-      return res
-        .status(200)
-        .json({ success: true, message: "Profile updated successfully" });
+      // Build dynamic update object
+      const updateData = {
+        category_id: categoryId,
+        bio: bio,
+        service_area: serviceArea,
+        base_price: basePrice,
+      };
+
+      if (profileImage) updateData.profile_image = profileImage;
+      
+      if (documentUrl) {
+        updateData.document_url = documentUrl;
+        updateData.is_approved = 0; // Force re-approval if they upload a new document
+      }
+
+      await updateProviderProfileInDB(userId, updateData);
+      
+      return res.status(200).json({ 
+        success: true, 
+        message: documentUrl 
+          ? "Profile updated. Waiting for admin approval for your new document." 
+          : "Profile updated successfully" 
+      });
+
     } else {
+      // Create new basic profile
       await insertProviderProfile(
         userId,
         categoryId,
@@ -45,6 +88,16 @@ export const createOrUpdateProfile = catchAsyncErrors(
         serviceArea,
         basePrice
       );
+
+      // If files were uploaded during creation, attach them immediately
+      if (profileImage || documentUrl) {
+        const fileUpdateData = {};
+        if (profileImage) fileUpdateData.profile_image = profileImage;
+        if (documentUrl) fileUpdateData.document_url = documentUrl;
+        
+        await updateProviderProfileInDB(userId, fileUpdateData);
+      }
+
       return res.status(201).json({
         success: true,
         message: "Profile created successfully. Waiting for admin approval.",
@@ -83,7 +136,10 @@ export const approveProvider = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler("isApproved must be a boolean", 400));
   }
 
-  await approveProviderInDB(profileId, isApproved);
+  // Map boolean to MySQL TINYINT (1 or 0)
+  const approvalStatus = isApproved ? 1 : 0;
+
+  await approveProviderInDB(profileId, approvalStatus);
 
   res.status(200).json({
     success: true,
@@ -92,24 +148,19 @@ export const approveProvider = catchAsyncErrors(async (req, res, next) => {
 });
 
 export const getActiveProviders = catchAsyncErrors(async (req, res, next) => {
-  // 1. Extract filters from the query URL
   const categoryId = req.query.categoryId || null; 
   const serviceArea = req.query.serviceArea || null; 
   
-  // 2. Extract pagination details
   const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 9; // 9 items per page for a 3x3 grid
+  const limit = parseInt(req.query.limit) || 9; 
   const offset = (page - 1) * limit;
 
-  // 3. Log to your terminal so you can see it working!
   console.log(`[SEARCH] Category: ${categoryId}, Area: ${serviceArea}, Page: ${page}`);
 
-  // 4. Fetch the data from the model
   const { providers, totalCount } = await getAllApprovedProviders(categoryId, serviceArea, limit, offset);
 
   const totalPages = Math.ceil(totalCount / limit);
 
-  // 5. Send payload WITH pagination object
   res.status(200).json({ 
     success: true, 
     pagination: {

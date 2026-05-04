@@ -15,8 +15,10 @@ const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: "local_services_booking",
-    allowedFormats: ["jpeg", "png", "jpg", "webp"],
+    allowedFormats: ["jpeg", "png", "jpg", "webp","pdf"],
   },
 });
 
 export const upload = multer({ storage: storage });
+export { cloudinary };
+
